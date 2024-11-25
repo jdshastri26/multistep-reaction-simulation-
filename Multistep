@@ -1,0 +1,97 @@
+# multistep_reaction_simulation.py
+
+import matplotlib.pyplot as plt
+
+def simulate_haber_process(steps=10):
+    """
+    Simulates the Haber process: N2 + 3 H2 -> 2 NH3.
+    Tracks reactants, products, and energy changes for a multistep reaction.
+    """
+    print("Simulating the Haber process...")
+    print("Reaction: N2 + 3 H2 -> 2 NH3\n")
+
+    # Initial concentrations (in moles)
+    nitrogen = 1.0  # moles of N2
+    hydrogen = 3.0  # moles of H2
+    ammonia = 0.0   # moles of NH3
+    intermediates = 0.0  # Hypothetical intermediates (e.g., NH2)
+
+    # Reaction enthalpy changes (in kJ/mol)
+    delta_h_intermediate = -100  # N2 + H2 -> NH2 (hypothetical)
+    delta_h_final = -200  # NH2 + H2 -> NH3 (net reaction)
+
+    # Energy tracking
+    total_enthalpy_change = 0
+
+    # Lists to track concentrations over time
+    nitrogen_progress = [nitrogen]
+    hydrogen_progress = [hydrogen]
+    ammonia_progress = [ammonia]
+    enthalpy_progress = [total_enthalpy_change]
+
+    # Simulation of the reaction over discrete steps
+    for step in range(steps):
+        print(f"Step {step + 1}/{steps}:")
+
+        # Simulate intermediate reaction (partial conversion to NH2)
+        if nitrogen > 0 and hydrogen > 0:
+            reaction_amount = min(nitrogen, hydrogen / 3) * 0.5
+            intermediates += reaction_amount
+            nitrogen -= reaction_amount
+            hydrogen -= 3 * reaction_amount
+            total_enthalpy_change += reaction_amount * delta_h_intermediate
+
+        # Simulate final step to ammonia
+        if intermediates > 0:
+            reaction_amount = intermediates * 0.8  # 80% efficiency
+            ammonia += reaction_amount
+            intermediates -= reaction_amount
+            hydrogen -= 1 * reaction_amount
+            total_enthalpy_change += reaction_amount * delta_h_final
+
+        # Update progress lists
+        nitrogen_progress.append(nitrogen)
+        hydrogen_progress.append(hydrogen)
+        ammonia_progress.append(ammonia)
+        enthalpy_progress.append(total_enthalpy_change)
+
+        # Log concentrations and energy
+        print(f"  N2: {nitrogen:.2f} mol, H2: {hydrogen:.2f} mol, NH3: {ammonia:.2f} mol")
+        print(f"  Total Enthalpy Change: {total_enthalpy_change:.2f} kJ\n")
+
+    # Plot results
+    plot_reaction_progress(nitrogen_progress, hydrogen_progress, ammonia_progress, enthalpy_progress)
+
+def plot_reaction_progress(nitrogen, hydrogen, ammonia, enthalpy):
+    """
+    Plots the progress of the reaction and energy changes over time.
+    """
+    steps = range(len(nitrogen))
+
+    plt.figure(figsize=(10, 6))
+
+    # Plot concentrations
+    plt.subplot(2, 1, 1)
+    plt.plot(steps, nitrogen, label='Nitrogen (N2)', marker='o')
+    plt.plot(steps, hydrogen, label='Hydrogen (H2)', marker='o')
+    plt.plot(steps, ammonia, label='Ammonia (NH3)', marker='o')
+    plt.title('Concentration Progress')
+    plt.xlabel('Reaction Steps')
+    plt.ylabel('Moles')
+    plt.legend()
+
+    # Plot enthalpy changes
+    plt.subplot(2, 1, 2)
+    plt.plot(steps, enthalpy, label='Total Enthalpy Change (kJ)', color='red', marker='o')
+    plt.title('Enthalpy Change Over Time')
+    plt.xlabel('Reaction Steps')
+    plt.ylabel('Enthalpy (kJ)')
+    plt.legend()
+
+    # Show plots
+    plt.tight_layout()
+    plt.show()
+
+# Run the simulation
+if __name__ == "__main__":
+    simulate_haber_process(steps=15)
